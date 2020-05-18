@@ -26,6 +26,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private final StateMachineFactory<PaymentState, PaymentEvent> stateMachineFactory;
 	private final PaymentStateChangeInterceptor paymentStateChangeInterceptor;
 
+	@Transactional
 	@Override
 	public Payment newPayment(Payment payment) {
 		payment.setState(PaymentState.NEW);
@@ -36,10 +37,11 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> preAutorize(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
-		sendEvent(paymentId, sm, PaymentEvent.PRE_AUTH_APPROVED);
+		sendEvent(paymentId, sm, PaymentEvent.PRE_AUTHORIZE);
 		return null;
 	}
 
+	@Transactional
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> authorizePayment(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
@@ -47,6 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
 		return null;
 	}
 
+	@Transactional
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> declineAuthorizePayment(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);

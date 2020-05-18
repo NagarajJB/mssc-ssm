@@ -36,12 +36,14 @@ class PaymentServiceImplTest {
 	void testPreAutorize() {
 
 		Payment savedPayment = paymentService.newPayment(payment);
+		System.out.println("Should be NEW!");
 		System.out.println(savedPayment);
 
 		paymentService.preAutorize(savedPayment.getId());
 
 		Payment preAuthPayement = paymentRepository.getOne(savedPayment.getId());
 
+		System.out.println("Should be PRE_AUTH or PRE_AUTH_DECLINED!");
 		System.out.println(preAuthPayement);
 	}
 

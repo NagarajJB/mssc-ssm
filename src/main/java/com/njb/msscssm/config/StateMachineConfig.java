@@ -1,8 +1,11 @@
 package com.njb.msscssm.config;
 
 import java.util.EnumSet;
+import java.util.Random;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
@@ -13,6 +16,7 @@ import org.springframework.statemachine.state.State;
 
 import com.njb.msscssm.domain.PaymentEvent;
 import com.njb.msscssm.domain.PaymentState;
+import com.njb.msscssm.services.PaymentServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,9 +37,9 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentSta
 	public void configure(StateMachineTransitionConfigurer<PaymentState, PaymentEvent> transitions) throws Exception {
 
 		transitions.withExternal().source(PaymentState.NEW).target(PaymentState.NEW).event(PaymentEvent.PRE_AUTHORIZE)
-				.and().withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH)
-				.event(PaymentEvent.PRE_AUTH_APPROVED).and().withExternal().source(PaymentState.NEW)
-				.target(PaymentState.PRE_AUTH_ERROR).event(PaymentEvent.PRE_AUTH_DECLINED);
+				.action(preAuthorizeAction()).and().withExternal().source(PaymentState.NEW)
+				.target(PaymentState.PRE_AUTH).event(PaymentEvent.PRE_AUTH_APPROVED).and().withExternal()
+				.source(PaymentState.NEW).target(PaymentState.PRE_AUTH_ERROR).event(PaymentEvent.PRE_AUTH_DECLINED);
 
 	}
 
@@ -53,4 +57,29 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentSta
 
 	}
 
+	private Action<PaymentState, PaymentEvent> preAuthorizeAction() {
+
+		return stateContext -> {
+
+			System.out.println("Pre-auth was called!");
+
+			if (new Random().nextInt(10) < 8) {
+				System.out.println("Approved!");
+				stateContext.getStateMachine()
+						.sendEvent(MessageBuilder.withPayload(PaymentEvent.PRE_AUTH_APPROVED)
+								.setHeader(PaymentServiceImpl.PAYMENT_ID,
+										stateContext.getMessageHeader(PaymentServiceImpl.PAYMENT_ID))
+								.build());
+			} else {
+				System.out.println("Declined..Credit Limit!!!");
+				stateContext.getStateMachine()
+						.sendEvent(MessageBuilder.withPayload(PaymentEvent.PRE_AUTH_DECLINED)
+								.setHeader(PaymentServiceImpl.PAYMENT_ID,
+										stateContext.getMessageHeader(PaymentServiceImpl.PAYMENT_ID))
+								.build());
+			}
+
+		};
+
+	}
 }
