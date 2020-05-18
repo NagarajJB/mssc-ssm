@@ -38,7 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
 	public StateMachine<PaymentState, PaymentEvent> preAutorize(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
 		sendEvent(paymentId, sm, PaymentEvent.PRE_AUTHORIZE);
-		return null;
+		return sm;
 	}
 
 	@Transactional
@@ -46,15 +46,16 @@ public class PaymentServiceImpl implements PaymentService {
 	public StateMachine<PaymentState, PaymentEvent> authorizePayment(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
 		sendEvent(paymentId, sm, PaymentEvent.AUTHORIZE);
-		return null;
+		return sm;
 	}
 
+	@Deprecated
 	@Transactional
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> declineAuthorizePayment(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
 		sendEvent(paymentId, sm, PaymentEvent.AUTH_DECLINED);
-		return null;
+		return sm;
 	}
 
 	private void sendEvent(Long paymentId, StateMachine<PaymentState, PaymentEvent> sm, PaymentEvent event) {
