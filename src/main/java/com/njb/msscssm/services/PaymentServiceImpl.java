@@ -1,5 +1,7 @@
 package com.njb.msscssm.services;
 
+import javax.transaction.Transactional;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -30,10 +32,11 @@ public class PaymentServiceImpl implements PaymentService {
 		return paymentRepository.save(payment);
 	}
 
+	@Transactional
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> preAutorize(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
-		sendEvent(paymentId, sm, PaymentEvent.PRE_AUTHORIZE);
+		sendEvent(paymentId, sm, PaymentEvent.PRE_AUTH_APPROVED);
 		return null;
 	}
 
