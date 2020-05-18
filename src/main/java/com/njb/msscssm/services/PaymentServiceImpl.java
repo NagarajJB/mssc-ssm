@@ -1,5 +1,7 @@
 package com.njb.msscssm.services;
 
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
@@ -16,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
+	public final static String PAYMENT_ID = "payment_id";
+
 	private final PaymentRepository paymentRepository;
 	private final StateMachineFactory<PaymentState, PaymentEvent> stateMachineFactory;
 
@@ -28,19 +32,29 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> preAutorize(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
+		sendEvent(paymentId, sm, PaymentEvent.PRE_AUTHORIZE);
 		return null;
 	}
 
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> authorizePayment(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
+		sendEvent(paymentId, sm, PaymentEvent.AUTHORIZE);
 		return null;
 	}
 
 	@Override
 	public StateMachine<PaymentState, PaymentEvent> declineAuthorizePayment(Long paymentId) {
 		StateMachine<PaymentState, PaymentEvent> sm = buildStateMachine(paymentId);
+		sendEvent(paymentId, sm, PaymentEvent.AUTH_DECLINED);
 		return null;
+	}
+
+	private void sendEvent(Long paymentId, StateMachine<PaymentState, PaymentEvent> sm, PaymentEvent event) {
+		// we can just send event or send data(payment id as a header) with it using
+		// message
+		Message<PaymentEvent> message = MessageBuilder.withPayload(event).setHeader(PAYMENT_ID, paymentId).build();
+		sm.sendEvent(message);
 	}
 
 	private StateMachine<PaymentState, PaymentEvent> buildStateMachine(Long paymentId) {
