@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentState, PaymentEvent> {
 
+	//used class name as property, so spring will take care, spring will try to check with type, if there are multiple, it wil check and map prop name to class name
 	private final Action<PaymentState, PaymentEvent> preAuthAction;
 	private final Action<PaymentState, PaymentEvent> authAction;
 	private final Guard<PaymentState, PaymentEvent> paymentIdGuard;
